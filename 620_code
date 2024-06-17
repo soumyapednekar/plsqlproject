@@ -1,0 +1,656 @@
+SET SERVEROUTPUT ON;
+--Tables are dropped 
+Drop Table Recommendations;
+Drop Table Reviews;
+Drop Table Invoices;
+Drop Table Creditcards;
+Drop Table Orders;
+Drop Table Products;
+Drop Table Productcategories;
+Drop Table Customers;
+--Sequences are dropped
+DROP SEQUENCE customers_seq;
+DROP SEQUENCE categories_seq;
+DROP SEQUENCE products_seq;
+DROP SEQUENCE orders_seq;
+DROP SEQUENCE creditcards_seq;
+DROP SEQUENCE invoices_seq;
+DROP SEQUENCE reviews_seq;
+DROP SEQUENCE recommendations_seq;
+--Sequences are created
+CREATE SEQUENCE customers_seq START WITH 20231 INCREMENT BY 1;
+CREATE SEQUENCE categories_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE products_seq START WITH 100 INCREMENT BY 1;
+CREATE SEQUENCE orders_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE creditcards_seq START WITH 5123456778 INCREMENT BY 50;
+CREATE SEQUENCE invoices_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE reviews_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE recommendations_seq START WITH 1 INCREMENT BY 1;
+--Tables are created
+--Customer table created
+CREATE TABLE Customers (
+    Customerid INT PRIMARY KEY,
+    Customer_name VARCHAR(255),
+    Customer_Email VARCHAR(255) UNIQUE NOT NULL,
+    City VARCHAR(100),
+    State VARCHAR(50),
+    Zip VARCHAR(20)
+);
+
+-- Product Categories table
+CREATE TABLE Productcategories (
+    Categoryid INT,
+    Categoryname VARCHAR2(100) NOT NULL,
+    CategoryDescription VARCHAR2(255),
+PRIMARY KEY(Categoryid)
+);
+
+-- Products table
+CREATE TABLE Products (
+    Productid INT,
+    Productname VARCHAR2(255) NOT NULL,
+    Availablequantity INT,
+    Unitprice FLOAT,
+    Categoryid INT NOT NULL,
+    PRIMARY KEY(Productid )
+    FOREIGN KEY (Categoryid) REFERENCES Productcategories(Categoryid)
+);
+
+-- Orders table
+CREATE TABLE Orders (
+    Orderid INT PRIMARY KEY,
+    Customerid INT NOT NULL,
+    Productid INT NOT NULL,
+    Quantity INT,
+    Orderdate DATE,
+    FOREIGN KEY (Customerid) REFERENCES Customers(Customerid),
+    FOREIGN KEY (Productid) REFERENCES Products(Productid)
+);
+
+-- Credit Cards table
+CREATE TABLE Creditcards (
+    Customerid INT NOT NULL,
+    Creditcard# VARCHAR(20) NOT NULL,
+    Creditcardtype VARCHAR(20),
+    Expirationyear INT,
+    Expirationmonth INT,
+    PRIMARY KEY (Customerid, Creditcard#),
+    FOREIGN KEY (Customerid) REFERENCES Customers(Customerid)
+);
+-- Invoices table
+CREATE TABLE Invoices (
+    Invoiceid INT PRIMARY KEY,
+    Orderid INT,
+    Customerid INT NOT NULL,
+    Creditcard# VARCHAR(20) NOT NULL,
+    Amount INT,
+    FOREIGN KEY (Orderid) REFERENCES Orders(Orderid),
+    FOREIGN KEY (Customerid) REFERENCES Customers(Customerid),
+    FOREIGN KEY (Customerid, Creditcard#) REFERENCES Creditcards(Customerid, Creditcard#)
+);
+-- Reviews table
+CREATE TABLE Reviews (
+    Reviewid INT PRIMARY KEY,
+    Productid INT NOT NULL,
+    Revieweremail VARCHAR(255),
+    Starsgiven INT,
+    Reviewtext VARCHAR(200),
+    FOREIGN KEY (Productid) REFERENCES Products(Productid)
+);
+
+-- Recommendations table
+CREATE TABLE Recommendations (
+    Recommendationid INT PRIMARY KEY,
+    Customerid INT NOT NULL,
+    Recommendedproductid INT NOT NULL,
+    Recommendationdate DATE,
+    FOREIGN KEY (Customerid) REFERENCES Customers(Customerid),
+    FOREIGN KEY (Recommendedproductid) REFERENCES Products(Productid)
+);
+
+--Details inserted into customers table
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Tejashree', 'Tejashree@umbc.edu', 'Baltimore', 'Maryland', '21227');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Ankith', 'Ankith@umbc.edu', 'Baltimore', 'Maryland', '21227');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Bhavana', 'Bhavana@gmail.com', 'Baltimore', 'Maryland', '21227');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Sahithi', 'Sahithi@umbc.edu', 'Baltimore', 'Maryland', '21227');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Soumya', 'Soumya@umbc.edu', 'Baltimore', 'Maryland', '21227');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'teenoosh', 'teenoosh@gmail.com', 'Dallas', 'Texas', '77494');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Anu', 'anu@gmail.com', 'Huston', 'Texas', '77410');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Bhim', 'Bhim@gmail.com', 'NYC', 'Newyork', '21400');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Saniya', 'Saniya@gmail.com', 'Boston', 'Massachussets', '36145');
+INSERT INTO Customers VALUES (customers_seq.NEXTVAL, 'Simon', 'Simon@gmail.com', 'South boston', 'Massachussets', '36145');
+select * from Customers ;
+
+-- Insert values into Productcategories
+INSERT INTO Productcategories (Categoryid, Categoryname, CategoryDescription) VALUES (categories_seq.NEXTVAL, 'Fashion', 'clothing and footwares');
+INSERT INTO Productcategories (Categoryid, Categoryname, CategoryDescription) VALUES (categories_seq.NEXTVAL, 'Electronics', 'Electrical and Electronics accessories');
+INSERT INTO Productcategories (Categoryid, Categoryname, CategoryDescription) VALUES (categories_seq.NEXTVAL, 'Sports', 'Sporting goods and outdoor equipment');
+INSERT INTO Productcategories (Categoryid, Categoryname, CategoryDescription) VALUES (categories_seq.NEXTVAL, 'Toys', 'Toys and gifts');
+INSERT INTO Productcategories (Categoryid, Categoryname, CategoryDescription) VALUES (categories_seq.NEXTVAL, 'Home and Furniture', 'Furniture and home decor');
+SELECT * FROM Productcategories;
+
+--Insert values into Products
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Jeans', 50, 250, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Fashion'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Tshirt', 50, 99.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Fashion'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Jackets', 50, 599.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Fashion'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Smartphone', 50, 599.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Electronics'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'TV', 50, 999.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Electronics'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'TABLET', 50, 499.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Electronics'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Basketball', 50, 20.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Sports'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Badminton racket', 20, 10.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Sports'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Cricket bat', 40, 25.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Sports'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Board game', 75, 19.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Toys'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Cars', 45, 19.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Toys'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Miniature kitchen set', 25, 99.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Toys'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Dining Table', 50, 299.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Home and Furniture'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Lamp', 50, 29.99, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Home and Furniture'));
+INSERT INTO Products (Productid, Productname, Availablequantity, Unitprice, Categoryid) VALUES (products_seq.NEXTVAL, 'Book shelf', 50, 110, (SELECT Categoryid FROM Productcategories WHERE Categoryname = 'Home and Furniture'));
+SELECT * FROM Products;
+
+-- Insert values into Orders
+-- Assuming products with Productid values generated by the products_seq sequence
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20231, 100, 10, TO_DATE('2023-01-10', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20232, 101, 20, TO_DATE('2023-01-11', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20233, 102, 30, TO_DATE('2023-01-12', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20234, 103, 11, TO_DATE('2023-01-01', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20235, 104, 12, TO_DATE('2022-05-18', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20236, 105, 9, TO_DATE('2022-02-16', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20237, 106, 100, TO_DATE('2021-08-19', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20238, 107, 21, TO_DATE('2023-12-31', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20239, 108, 10, TO_DATE('2021-12-12', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20240, 109, 21, TO_DATE('2023-12-31', 'YYYY-MM-DD'));
+INSERT INTO Orders (Orderid, Customerid, Productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, 20241, 110, 19, TO_DATE('2021-12-12', 'YYYY-MM-DD'));
+SELECT * FROM Orders;
+
+-- Insert values into Creditcards using the creditcards_seq sequence
+-- Assuming  customers with Customerid values generated by the customers_seq sequence
+INSERT INTO Creditcards (Customerid, Creditcard#, Creditcardtype, Expirationyear, Expirationmonth) VALUES (20231, creditcards_seq.NEXTVAL, 'Visa', 2025, 2);
+INSERT INTO Creditcards (Customerid, Creditcard#, Creditcardtype, Expirationyear, Expirationmonth) VALUES (20232, creditcards_seq.NEXTVAL, 'MasterCard', 2025, 8);
+INSERT INTO Creditcards (Customerid, Creditcard#, Creditcardtype, Expirationyear, Expirationmonth) VALUES (20233, creditcards_seq.NEXTVAL, 'Discover', 2025, 5);
+SELECT * FROM Creditcards;
+
+-- Insert values into Invoices using existing Creditcard#
+-- Assuming orders with Orderid values generated by the orders_seq sequence
+INSERT INTO Invoices (Invoiceid, Orderid, Customerid, Creditcard#, Amount) VALUES (invoices_seq.NEXTVAl, 1, 20231, (SELECT Creditcard# FROM Creditcards WHERE Customerid = 20231), 350.05);
+INSERT INTO Invoices (Invoiceid, Orderid, Customerid, Creditcard#, Amount) VALUES (invoices_seq.NEXTVAl, 2, 20232, (SELECT Creditcard# FROM Creditcards WHERE Customerid = 20232), 105.50);
+INSERT INTO Invoices (Invoiceid, Orderid, Customerid, Creditcard#, Amount) VALUES (invoices_seq.NEXTVAl, 4, 20233, (SELECT Creditcard# FROM Creditcards WHERE Customerid = 20233), 200.05);
+SELECT * FROM Invoices;
+
+--Insert values into Reviews table
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,100, 'reviewer1@gmail.com',2,'Good');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,101, 'reviewer2@gmail.com',1,'Excellent');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,102, 'reviewer10@gmail.com',2,'Good');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,103, 'reviewer3@gmail.com',2,'Good');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,104, 'reviewer4@gmail.com',1,'Average');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,105, 'reviewer5@gmail.com',3,'Excellent');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,106, 'reviewer6@gmail.com',2,'Good');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,107, 'reviewer7@gmail.com',3,'Excellent');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,108, 'reviewer8@gmail.com',3,'Excellent');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,109, 'reviewer9@gmail.com',1,'Average');
+INSERT INTO Reviews (Reviewid, Productid, Revieweremail, Starsgiven, Reviewtext) VALUES (reviews_seq.nextval,110, 'reviewer10@gmail.com',3,'Excellent');
+select * from Reviews;
+
+--Insert Values into Recommendations
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Aniketh@umbc.edu'), (SELECT Productid FROM Products WHERE Productname = 'Smartphone'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Tejashree@umbc.edu'), (SELECT Productid FROM Products WHERE Productname = 'Basketball'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Soumya@umbc.edu'), (SELECT Productid FROM Products WHERE Productname = 'Board game'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Sahithi@umbc.edu'), (SELECT Productid FROM Products WHERE Productname = 'Dining Table'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Bhavana@umbc.com'), (SELECT Productid FROM Products WHERE Productname = 'Jeans'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Anu@gmail.com'), (SELECT Productid FROM Products WHERE Productname = 'Book shelf'), sysdate);
+INSERT INTO Recommendations (Recommendationid, Customerid, Recommendedproductid, Recommendationdate) values (recommendations_seq.nextval,(SELECT Customerid FROM Customers WHERE Customer_Email = 'Bhim@gmail.com'), (SELECT Productid FROM Products WHERE Productname = 'Cars'), sysdate);
+select * from Recommendations;
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--MEMBER 1
+--HELPER FUNCTION
+CREATE OR REPLACE FUNCTION FIND_CUSTOMER_ID(
+    val_customer_email IN VARCHAR2
+) RETURN NUMBER AS
+    p_customer_id NUMBER;
+BEGIN
+    --using cust_id based on the provided cust_email
+    SELECT Customerid
+    INTO p_customer_id
+    FROM Customers
+    WHERE upper(customer_Email) =upper( val_customer_email);
+
+    RETURN p_customer_id;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        dbms_output.put_line('No Customer ID found or Customer Does not exist');
+        RETURN NULL;
+END FIND_CUSTOMER_ID;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--MEMBER 2
+–(5) Add_Category
+CREATE OR REPLACE PROCEDURE Add_Category(c_category_name VARCHAR2, c_description VARCHAR2)
+AS
+BEGIN
+-- Inserting values into the Productcategories table
+INSERT INTO Productcategories VALUES (category_id_seq.nextval,c_category_name,c_description);
+-- Committing the transaction
+COMMIT;
+-- Displaying a success message
+DBMS_OUTPUT.PUT_LINE('Category added successfully.');
+EXCEPTION
+WHEN OTHERS THEN
+-- Handling exceptions
+ROLLBACK; -- Rolling back the transaction in case of an exception
+DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/
+--Execution/ Calling the procedure Add_Category
+exec Add_Category('Bag','Includes all kind of bags');
+
+–(6)Add_Product
+--Helper function to find the category ID
+CREATE OR REPLACE FUNCTION Find_Product_Category_ID(c_category_name VARCHAR2)
+RETURN NUMBER
+AS
+v_category_id NUMBER;
+BEGIN
+select category_id into v_category_id from Productcategories where 
+Categoryname =c_category_name;
+RETURN v_category_id;
+EXCEPTION
+WHEN no_data_found THEN
+RETURN NULL;
+WHEN OTHERS THEN
+RETURN -1;
+END;
+/
+
+--Creating the procedure Add_Product
+CREATE OR REPLACE PROCEDURE Add_Product
+(v_product_name VARCHAR2,
+v_quantity NUMBER,
+v_unitprice NUMBER,
+categoryname VARCHAR2
+)AS
+v_category_id product_categories.category_id%type;
+BEGIN
+v_category_id:=find_product_category_ID(categoryname);
+IF v_category_id is not null then
+-- Inserting values into the table
+INSERT INTO products
+VALUES(product_ID_seq.nextval,v_product_name,v_quantity,v_unitprice,v_category_id);
+ELSE
+DBMS_OUTPUT.PUT_LINE('No such category');
+END IF;
+EXCEPTION
+WHEN no_data_found THEN
+DBMS_OUTPUT.PUT_LINE('No data is found for given inputs');
+WHEN OTHERS THEN
+DBMS_OUTPUT.PUT_LINE('There is an error please check');
+END;
+/
+
+--Execution/ Calling the procedure Add_Product
+Exec Add_Product('Cookie',10,21.99,'Dessert');
+/
+
+–(7) Update_Inventory Task
+--Creating the procedure Update_Inventory
+CREATE OR REPLACE PROCEDURE Update_Inventory(u_product_id number,u_quantity number)
+AS
+BEGIN
+--Updating the inventory command
+UPDATE products set quantity=quantity-u_quantity where product_id=u_product_id;
+COMMIT;
+EXCEPTION
+WHEN no_data_found THEN
+dbms_output.put_line('No data found for product_id');
+WHEN OTHERS THEN
+dbms_output.put_line('Other Error found');
+end;
+/
+
+--Execution/ Calling the procedure Update_Inventory
+exec Update_Inventory(1,1);
+
+–(8) Report_Inventory
+--Creating the procedure  Report_Inventory
+CREATE OR REPLACE PROCEDURE Report_Inventory
+IS
+cursor c1 is select pc.categoryname, 
+sum(p.quantity) AS "Total_Quantity" from products p, Productcategories pc
+where p.category_id=pc.categoryid
+Group by categoryname,p.categoryid
+order by pc.categoryname;
+c_category_name Productcategories.categoryname%type;
+c_quantity products.quantity%type;
+BEGIN
+open c1;
+loop
+	fetch c1 into c_category_name, c_quantity; -- fetch
+	exit when c1%NOTFOUND; --- exit check
+	dbms_output.put_line('Category Name = ' || c_category_name ||	', Total Quantity = ' || c_quantity);
+END LOOP;
+Close c1; -- close cursor
+END;
+/
+
+--Execution/ Calling the procedure Report_Inventory
+Exec Report_Inventory;
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--MEMBER 3
+--(9)Place_Order
+CREATE OR REPLACE PROCEDURE Place_Order(
+    val_customer_email IN VARCHAR2,
+    val_prod_name IN VARCHAR2,
+    val_quan IN NUMBER,
+    val_cc_num IN VARCHAR2
+) AS
+    v_customer_id NUMBER;
+    v_product_id NUMBER;
+BEGIN
+    -- Step 1: Use the helper function FIND_CUSTOMER_ID to find the customer ID
+    v_customer_id := FIND_CUSTOMER_ID(val_customer_email);
+
+    -- Step 2: Use the helper function FIND_PRODUCT_ID to find the product ID
+    v_product_id := FIND_PRODUCT_ID(val_prod_name);
+    INSERT INTO Orders(Orderid, customerid, productid, Quantity, Orderdate) VALUES (orders_seq.NEXTVAL, v_customer_id, v_product_id, val_quan, SYSDATE);
+    Update_Inventory(v_product_id, val_quan);  
+    COMMIT;
+END Place_Order;
+
+EXEC Place_Order('soumya@umbc.edu', 'basketball', 7, '5123456978');
+
+EXEC Place_Order('soumya@umbc.edu', 'Board game', 10, '5123456978');
+
+EXEC Place_Order('Tejashree@umbc.edu', 'dining Table', 13, '5123457028');
+
+select * from products;
+
+--(10)Show_Orders
+CREATE OR REPLACE PROCEDURE Show_Orders AS
+BEGIN
+    -- Display all orders in the online marketplace
+    FOR order_info IN (
+        SELECT
+            c.customer_Name AS Customer_Name,
+            p.Productname,
+            o.Quantity,
+            o.Quantity * p.UnitPrice AS Amount_Charged
+        FROM
+            Orders o
+            JOIN Customers c ON o.customerid = c.Customerid
+            JOIN Products p ON o.productid = p.Productid
+    )
+    LOOP
+        -- Print order details
+        DBMS_OUTPUT.PUT_LINE('Customer Name: ' || order_info.Customer_Name);
+        DBMS_OUTPUT.PUT_LINE('Product: ' || order_info.ProductName);
+        DBMS_OUTPUT.PUT_LINE('Quantity Ordered: ' || order_info.Quantity);
+        DBMS_OUTPUT.PUT_LINE('Amount Charged: ' || TO_CHAR(order_info.Amount_Charged, 'FM$999,999,999.99'));
+        DBMS_OUTPUT.PUT_LINE('--------------------------------------------');
+    END LOOP;
+
+    -- Display the grand total of the number of all orders placed in the system
+    -- Commit the changes
+    COMMIT;
+END Show_Orders;
+EXEC Show_Orders;
+select * from orders;
+
+--(11)Report_order_by_state
+CREATE OR REPLACE PROCEDURE Report_order_by_state(
+    val_state VARCHAR2
+) AS 
+    v_total_orders NUMBER := 0;
+    v_total_amount NUMBER := 0;
+
+    CURSOR ord_cur IS
+        SELECT c.customer_name, c.Customer_Email,COUNT(ord.orderid) as total_orders, SUM(p.Unitprice * ord.Quantity) as total_amount FROM Orders ord
+            JOIN Customers c ON ord.customerid = c.customerid
+            JOIN Products p ON ord.Productid = p.Productid
+        WHERE
+            upper(c.State) =upper( val_state)
+        GROUP BY
+            c.customer_name, c.Customer_Email;
+
+BEGIN
+    FOR order_record IN ord_cur
+    LOOP
+        dbms_output.put_line('Customer Name: ' || order_record.customer_name);
+        dbms_output.put_line('Customer Email: ' || order_record.Customer_Email);
+        dbms_output.put_line('Total Orders Placed: ' || order_record.total_orders);
+        dbms_output.put_line('Total Amount Spent: $' || order_record.total_amount);
+        dbms_output.put_line('---------------------');
+
+        v_total_orders := v_total_orders + order_record.total_orders;
+        v_total_amount := v_total_amount + order_record.total_amount;
+    END LOOP;
+
+    dbms_output.put_line('Grand Total Orders: ' || v_total_orders);
+    dbms_output.put_line('Grand Total Amount Spent: $' || v_total_amount);
+END Report_order_by_state;
+exec Report_order_by_state ('maryland');
+
+--(12)Report_Low_Inventory
+CREATE OR REPLACE TRIGGER LowInventoryTrigger
+BEFORE INSERT OR UPDATE ON Products
+FOR EACH ROW
+DECLARE
+    v_units_threshold NUMBER := 50;
+BEGIN
+    IF NVL(:NEW.AvailableQuantity, 0) < v_units_threshold THEN
+        DBMS_OUTPUT.PUT_LINE('Low Inventory Alert:');
+        DBMS_OUTPUT.PUT_LINE('Product ID: ' || :NEW.ProductID);
+        DBMS_OUTPUT.PUT_LINE('Product Name: ' || :NEW.ProductName);
+        DBMS_OUTPUT.PUT_LINE('Available Quantity: ' || NVL(:NEW.AvailableQuantity, 0));
+        DBMS_OUTPUT.PUT_LINE('-------------------------');
+    END IF;
+END LowInventoryTrigger;
+/
+INSERT INTO Products (ProductID, ProductName, AvailableQuantity, UnitPrice, CategoryID) VALUES (products_seq.NEXTVAL, 'Dress', 10, 10.99, 1);
+UPDATE Products SET AvailableQuantity = 30 WHERE ProductID =6;
+select * from products;
+
+CREATE OR REPLACE PROCEDURE Restock_Product(
+    product_name VARCHAR2,
+    new_units NUMBER
+) AS
+    prod_id NUMBER;
+BEGIN
+    -- Find the product ID based on the product name
+    SELECT Productid INTO prod_id
+    FROM Products
+    WHERE UPPER(Productname) = UPPER(product_name);
+UPDATE Products
+    SET Availablequantity = Availablequantity + new_units
+    WHERE Productid = prod_id;
+
+    -- Call the Update_Inventory procedure to restock the product
+   --Update_Inventory(prod_id, new_units);
+END;
+exec Restock_Product('Dining Table',1);
+select * from products;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--MEMBER 4
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--MEMBER 5
+--(17)ADD_REVIEW
+CREATE OR REPLACE PROCEDURE ADD_REVIEW(
+    p_reviewer_email VARCHAR2,
+    p_stars_given NUMBER,
+    p_product_name VARCHAR2,
+    p_review_text VARCHAR2
+)
+IS
+    v_product_id NUMBER;
+BEGIN
+    -- Find the product ID using the FIND_PRODUCT_ID function
+    v_product_id := FIND_PRODUCT_ID(p_product_name);
+
+    -- Insert into the Reviews table with the automatically generated ID
+    INSERT INTO reviews(reviewid, revieweremail, starsgiven, productid, reviewtext)
+    VALUES(reviews_seq.NEXTVAL, p_reviewer_email, p_stars_given, v_product_id, p_review_text);
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Review added successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END ADD_REVIEW;
+/
+EXEC Add_Review('your_email@example.com', 5, 'Smartphone', 'Excellent Product');
+select * from reviews;
+
+--(18)Buy_or_Beaware
+CREATE OR REPLACE PROCEDURE Buy_Or_Beware(p_X INT) IS
+BEGIN
+  -- Top-rated products
+  DBMS_OUTPUT.PUT_LINE('Top rated products');
+  FOR rec IN (
+    SELECT
+      AVG(r.Starsgiven) AS AvgStars,
+      p.Productid,
+      p.Productname,
+      STDDEV(r.Starsgiven) AS StdDev
+    FROM
+      Products p
+      JOIN Reviews r ON p.Productid = r.Productid
+    GROUP BY
+      p.Productid,
+      p.Productname
+    ORDER BY
+      AvgStars DESC
+  ) LOOP
+    DBMS_OUTPUT.PUT_LINE(
+      rec.AvgStars || ' stars - Product ID: ' || rec.Productid ||
+      ', Product Name: ' || rec.Productname || ', Std Dev: ' || rec.StdDev
+    );
+
+    -- Break if reached the specified number of products
+    EXIT WHEN rec.Productid = p_X;
+  END LOOP;
+
+  -- Buyer Beware: Stay Away from...
+  DBMS_OUTPUT.PUT_LINE('Buyer Beware: Stay Away from...');
+  FOR rec IN (
+    SELECT
+      AVG(r.Starsgiven) AS AvgStars,
+      p.Productid,
+      p.Productname,
+      STDDEV(r.Starsgiven) AS StdDev
+    FROM
+      Products p
+      JOIN Reviews r ON p.Productid = r.Productid
+    GROUP BY
+      p.Productid,
+      p.Productname
+    ORDER BY
+      AvgStars ASC
+  ) LOOP
+    DBMS_OUTPUT.PUT_LINE(
+      rec.AvgStars || ' stars - Product ID: ' || rec.Productid ||
+      ', Product Name: ' || rec.Productname || ', Std Dev: ' || rec.StdDev
+    );
+
+    -- Break if reached the specified number of products
+    EXIT WHEN rec.Productid = p_X;
+  END LOOP;
+END Buy_Or_Beware;
+/
+-- Call the procedure with X as the number of products to display
+EXEC Buy_Or_Beware(5);
+SET SERVEROUTPUT ON;
+
+-- Execute the Buy_Or_Beware procedure with X = 2
+EXEC Buy_Or_Beware(2);
+
+--(19)Recommend_To_Customer
+CREATE OR REPLACE PROCEDURE Recommend_To_Customer(p_CustomerId INT) AS
+    v_CategoryId INT;
+    v_RecommendedProductId INT;
+BEGIN
+    -- Find the category of the product the customer has previously bought
+    SELECT DISTINCT p.Categoryid INTO v_CategoryId FROM Orders o
+    JOIN Products p ON o.Productid = p.Productid
+    WHERE o.Customerid = p_CustomerId
+      AND ROWNUM = 1;
+
+    -- Identify the best-rated product in the same category
+    SELECT r.Productid INTO v_RecommendedProductId
+    FROM Reviews r
+    JOIN Products p ON r.Productid = p.Productid
+    WHERE p.Categoryid = v_CategoryId
+      AND p.Productid NOT IN (
+          SELECT o.Productid FROM Orders o
+          WHERE o.Customerid = p_CustomerId
+      )
+    GROUP BY r.Productid
+    ORDER BY AVG(r.Starsgiven) DESC;
+
+    -- Insert the recommendation into the Recommendations table
+    INSERT INTO recommendations (recommendationid, customerid, recommendedproductid, recommendationdate)
+VALUES (recommendations_seq.nextval, p_CustomerId, v_RecommendedProductId, SYSDATE);
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Recommendation added for CustomerID ' || p_CustomerId ||
+                        ': ProductID ' || v_RecommendedProductId || ' recommended.');
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No recommendation available for Customer ID ' || p_CustomerId);
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END Recommend_To_Customer;
+/
+SET SERVEROUTPUT ON;
+-- Execute the procedure for a specific customer ID
+EXEC RECOMMEND_TO_CUSTOMER(2);
+
+
+
+   
+--(20)List_Recommendations
+CREATE OR REPLACE PROCEDURE List_Recommendations AS
+BEGIN
+    FOR rec IN (
+        SELECT
+            c.Customer_name,
+            p.Productname AS Recommended_Product,
+            AVG(r.Starsgiven) AS AvgStars
+        FROM
+            Recommendations re
+            JOIN Customers c ON re.Customerid = c.Customerid
+            JOIN Products p ON re.Recommendedproductid = p.Productid
+            LEFT JOIN Reviews r ON re.Recommendedproductid = r.Productid
+        GROUP BY
+            c.Customer_name,
+            p.Productname
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            'Customer: ' || rec.Customer_name ||
+            ', Recommended Product: ' || rec.Recommended_Product ||
+            ', Avg Stars: ' || COALESCE(TO_CHAR(rec.AvgStars, '99.99'), 'N/A')
+        );
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END LIST_RECOMMENDATIONS;
+/
+-- Execute the List_Recommendations procedure
+EXEC List_Recommendations;
+
